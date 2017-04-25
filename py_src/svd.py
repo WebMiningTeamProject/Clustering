@@ -20,7 +20,7 @@ for i, row in enumerate(result):
     uris[i] = row["uri"]
     texts[i] = row["text"]
 
-#Sparse Term-Doc matix (TF-IDF)
+#Sparse Doc-Term(!) matix (TF-IDF)
 print("Calculation TF-IDF...")
 tfidf_vectorizer = TfidfVectorizer(max_df=0.95, min_df=2,
                                    #max_features=n_features,
@@ -30,16 +30,17 @@ tfidf = tfidf_vectorizer.fit_transform(texts)
 print("Finished TF-IDF: ", tfidf.shape)
 
 #SVD
-k = 20
+k = 100
 print("Calculating SVD with k=", k)
 
 U, s, Vt = svds(tfidf,k=k)
 vocab = np.array(tfidf_vectorizer.get_feature_names())
-
-print(vocab)
+print("S: ", s[::-1])
+#print("Vocab: ",vocab.shape)
 topn = 20
-print("Top ",topn, " words per topic")
-for i, row in enumerate(U.transpose()):
+print("Top ",topn, " words for first 10 topics")
+for i, row in enumerate(Vt[k-10:,:]):
     print("Topic ", i, ":")
+    #print("Row: ", row.shape)
     print(vocab[np.argsort(row)[::-1][:topn]])
 
