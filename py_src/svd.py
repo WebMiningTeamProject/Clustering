@@ -5,10 +5,10 @@ from scipy.sparse.linalg import svds
 from dbhandler import DatabaseHandler
 
 print("Querying data...")
-handler = DatabaseHandler("ec2-52-57-13-180.eu-central-1.compute.amazonaws.com", "webmining", "asN5O$YVZch-$vyFEN^*", "webmining")
+handler = DatabaseHandler()
 result = handler.execute(
-    """SELECT source_uri as 'uri', text 
-    FROM NewsArticles    
+    """SELECT source_uri as 'uri', bow as 'text' 
+    FROM NewsArticlesBOW    
     """)
 
 

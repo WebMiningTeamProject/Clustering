@@ -107,3 +107,4 @@ JavaModule/.settings/
 *.zip
 *.npy
 *.npz
+*.ini
