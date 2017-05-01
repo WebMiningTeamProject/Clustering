@@ -102,9 +102,10 @@ ENV/
 .project
 JavaModule/.settings/
 
-# data
+# data / files
 *.dict
 *.zip
 *.npy
 *.npz
 *.ini
+*.png
