@@ -62,11 +62,36 @@ def calc_nmf(matrix,
 
     #derive topics
     topics = {}
+    #mask_nonzero = cluster_assignments > 0
+    sums = np.sum(cluster_assignments, axis=0)
+    counts = np.count_nonzero(cluster_assignments, axis=0)
+    #medians = np.median(cluster_assignments[mask_nonzero,:],axis=0)
+    #stds = np.std(cluster_assignments[mask_nonzero,:],axis=0)
+    total_count = cluster_assignments.shape[0]
+    most_relevant_topics = np.argsort(cluster_assignments, axis=1)[:, -1]  # just the last column (Ascending sorted!)
     for c_idx, component in enumerate(nmf.components_):
+        # determine top terms
         top = component.argsort()[::-1][:top_n]
         top = top[component[top] > 0]
+
+        # Calc. KPIs
+        avg_weight = sums[c_idx]/counts[c_idx]
+        article_ratio = counts[c_idx]/total_count
+        mask_nonzero = cluster_assignments[:,c_idx] > 0
+        std = np.std(cluster_assignments[mask_nonzero,c_idx])
+        median = np.median(cluster_assignments[mask_nonzero,c_idx])
+        top_ratio = len(np.where(most_relevant_topics == c_idx)[0]) / counts[c_idx]
+
+
+
+        # Store
         topics[c_idx] = {"terms": vocab[top],
-                         "weights": component[top]}
+                         "weights": component[top],
+                         "avg_weight": avg_weight,
+                         "median_weight": median,
+                         "std_weight": std,
+                         "article_ratio": article_ratio,
+                         "top_ratio": top_ratio}
 
     return cluster_assignments, topics
 
