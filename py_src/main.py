@@ -3,41 +3,41 @@ import decompositions as dc
 import output as out
 
 def main():
-    n_topics = 15
+    n_topics = 25
     top_n = 20 #words per topic
+    prefix = "t25_12gram_"
+    path = "files/wordclouds/"
+    ngram_range = (1, 2)
 
-    # uris, texts = get_data(use_cache=True)
-    # tfidf, vocab = get_tfidf(texts)
+    dh = DataHandler(use_cache=True,ngram_range=ngram_range)
 
-    dh = DataHandler(use_cache=True)
-
-    tfidf, tfidft_vocab = dh.get_tfidf()
+    tfidf, tfidf_vocab = dh.get_tfidf()
 
     #Do SVD
     clusters, topics = dc.calc_svd(matrix=tfidf,
-                                vocab=tfidft_vocab,
-                                svd_k=20,
-                                n_topics=n_topics,
-                                top_n=top_n)
+                                   vocab=tfidf_vocab,
+                                   svd_k=n_topics + 5,
+                                   n_topics=n_topics,
+                                   top_n=top_n)
     out.print_clusters(clusters, topics)
-    out.create_wordclouds(clusters, topics,files_path="files/wordclouds/svd/")
+    out.create_wordclouds(clusters, topics,files_path=path + "svd/",prefix=prefix)
 
     #Do NMF
     clusters, topics = dc.calc_nmf(matrix=tfidf,
-                                vocab=tfidft_vocab,
-                                n_topics=n_topics,
-                                top_n=top_n)
+                                   vocab=tfidf_vocab,
+                                   n_topics=n_topics,
+                                   top_n=top_n)
     out.print_clusters(clusters,topics)
-    out.create_wordclouds(clusters, topics, files_path="files/wordclouds/nmf/")
+    out.create_wordclouds(clusters, topics, files_path=path + "nmf/",prefix=prefix)
 
     #Do LDA:
     tf, tf_vocab = dh.get_tf()
     clusters, topics = dc.calc_lda(matrix=tf,
-                                vocab=tf_vocab,
-                                n_topics=n_topics,
-                                top_n=top_n)
+                                   vocab=tf_vocab,
+                                   n_topics=n_topics,
+                                   top_n=top_n)
     out.print_clusters(clusters, topics)
-    out.create_wordclouds(clusters, topics, files_path="files/wordclouds/lda/")
+    out.create_wordclouds(clusters, topics, files_path=path + "lda/",prefix=prefix)
 
 
 

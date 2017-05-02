@@ -5,6 +5,7 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import os
 
+
 def print_clusters(cluster_assignments, topics):
     print("Topic Overview:")
     clusters_unique, cluster_counts = getUniquesAndCounts(cluster_assignments, topics)
@@ -13,7 +14,8 @@ def print_clusters(cluster_assignments, topics):
               " count: ", cluster_counts[c_idx])
               #", top terms: ", topics[c_idx]["terms"])
 
-def create_wordclouds(cluster_assignments, topics, files_path="files/wordclouds/"):
+
+def create_wordclouds(cluster_assignments, topics, files_path="files/wordclouds/", prefix=""):
     print("Create WordClouds per topic in ", files_path)
     if not os.path.exists(files_path):
         os.makedirs(files_path)
@@ -25,7 +27,7 @@ def create_wordclouds(cluster_assignments, topics, files_path="files/wordclouds/
         # create it
         wordcloud = WordCloud().generate_from_frequencies(dic)
         # save it
-        plt.imsave(fname=files_path + "topic" + str(cluster) + "_" + str(cluster_counts[cluster]) + ".png",
+        plt.imsave(fname=files_path + prefix + "topic" + str(cluster) + "_" + str(cluster_counts[cluster]) + ".png",
                arr=wordcloud)
 
 

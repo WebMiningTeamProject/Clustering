@@ -3,13 +3,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import numpy as np
 
 class DataHandler:
-    def __init__(self, use_cache, files_path="files/"):
+    def __init__(self, use_cache, files_path="files/", ngram_range=(1, 1)):
         #Init Data
         self.uris, self.texts = self.__load_data(use_cache=use_cache, files_path=files_path)
 
         #Vectorize
-        self.tfidf, self.tfidf_vocab = self.__calc_tfidf(self.texts)
-        self.tf, self.tf_vocab = self.__calc_tf(self.texts)
+        self.tfidf, self.tfidf_vocab = self.__calc_tfidf(self.texts, ngram_range=ngram_range)
+        self.tf, self.tf_vocab = self.__calc_tf(self.texts, ngram_range=ngram_range)
 
     def get_uris(self):
         return self.uris
@@ -59,23 +59,26 @@ class DataHandler:
 
         return uris, texts
 
-    def __calc_tfidf(self, texts):
+    def __calc_tfidf(self, texts, ngram_range=(1, 1)):
         # Sparse Doc-Term(!) matix (TF-IDF)
         print("TF-IDF: Calculation...")
-        tfidf_vectorizer = TfidfVectorizer(max_df=0.95, min_df=2,
+        tfidf_vectorizer = TfidfVectorizer(max_df=0.8, min_df=10,
                                            # max_features=n_features,
                                            # stop_words='english',
-                                           sublinear_tf=True)
+                                           sublinear_tf=True,
+                                           ngram_range=ngram_range)
         tfidf = tfidf_vectorizer.fit_transform(texts)
         vocab = np.array(tfidf_vectorizer.get_feature_names())
         print("TF-IDF: Finished, shape: ", tfidf.shape)
         # print("TF-IDF: Vocab shape: ", vocab.shape)
         return tfidf, vocab
 
-    def __calc_tf(self, texts):
+    def __calc_tf(self, texts, ngram_range=(1, 1)):
         # Sparse Doc-Term(!) matix (TF)
         print("TF: Calculation...")
-        tf_vectorizer = CountVectorizer(max_df=0.95, min_df=2)
+        tf_vectorizer = CountVectorizer(max_df=0.8,
+                                        min_df=10,
+                                        ngram_range=ngram_range)
         tf = tf_vectorizer.fit_transform(texts)
         vocab = np.array(tf_vectorizer.get_feature_names())
         print("TF: Finished, shape: ", tf.shape)

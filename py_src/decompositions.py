@@ -8,7 +8,7 @@ from scipy.sparse import csr_matrix
 
 def calc_svd(matrix,
              vocab,
-             svd_k=20,
+             svd_k=30,
              n_topics=15,
              top_n = 20):
     #SVD
