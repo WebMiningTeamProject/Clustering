@@ -23,6 +23,7 @@ class DatabaseHandler:
         self.db = None
         self.connect()
         self.condition = threading.Condition()
+        self.logger = logging.getLogger()
 
     def load_config(config_file):
         """
@@ -93,12 +94,10 @@ class DatabaseHandler:
                     self.cnx.execute(statement)
                     return self.cnx.fetchall()
                 except MySQLdb.Warning as e:
-                    #self.logger.warn("Warning while executing statement: %s" % e)
-                    pass
+                    self.logger.warn("Warning while executing statement: %s" % e)
                 except MySQLdb.Error as e:
-                    #self.logger.error("Error while executing statement [%d]: %s"
-                    #                  % (e.args[0], e.args[1]))
-                    pass
+                    self.logger.error("Error while executing statement [%d]: %s"
+                                      % (e.args[0], e.args[1]))
 
     def persistDict(self, table, array_of_dicts):
         sql = self.__buildInsertSql(table, array_of_dicts)

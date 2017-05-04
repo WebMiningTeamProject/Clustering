@@ -5,7 +5,7 @@ import output as out
 def main():
     n_topics = 20
     top_n = 20 #words per topic
-    prefix = "t25_12gram_"
+    prefix = "t20_12gram_"
     path = "files/wordclouds/"
     ngram_range = (1, 2)
 
@@ -30,6 +30,7 @@ def main():
     out.filterTopics(topics)
     out.print_clusters(clusters,topics)
     out.create_wordclouds(clusters, topics, files_path=path + "nmf/",prefix=prefix,clear_path=True)
+    out.storeClustersToDB(cluster_assignments=clusters, topics=topics, source_uris=dh.get_uris())
 
     #Do LDA:
     # tf, tf_vocab = dh.get_tf()
