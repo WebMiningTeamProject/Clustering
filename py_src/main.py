@@ -3,9 +3,9 @@ import decompositions as dc
 import output as out
 
 def main():
-    n_topics = 20
+    n_topics = 30
     top_n = 20 #words per topic
-    prefix = "t20_12gram_"
+    prefix = "t30_12gram_"
     path = "files/wordclouds/"
     ngram_range = (1, 2)
 

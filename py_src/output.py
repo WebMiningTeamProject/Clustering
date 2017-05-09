@@ -57,7 +57,8 @@ def storeClustersToDB(cluster_assignments, topics, source_uris):
             cluster_id  VARCHAR(3) PRIMARY KEY,
             terms       TEXT(500),
             kpis        TEXT(500),
-            invalid     CHAR(1)
+            invalid     CHAR(1),
+            cluster_name VARCHAR(100)
         )        
     """
     dbh.execute(sql)
@@ -71,7 +72,8 @@ def storeClustersToDB(cluster_assignments, topics, source_uris):
         tuples.append("(" + str(topic_idx)
                       + ",'" + ",".join(topic["terms"]) + "','"
                       + getKPIString(topic) + "','"
-                      + invalid + "')")
+                      + invalid + "','"
+                      + getClusterName(topic["terms"]) + "')")
     sql = "INSERT INTO Cluster (cluster_id, terms, kpis, invalid) VALUES "
     sql += ",".join(tuples)
     dbh.execute(sql)
@@ -169,6 +171,24 @@ def getKPIString(topic):
                 topic["top_ratio"])
 
     return string
+
+
+def getClusterName(topic, max_terms=3):
+    all_terms = np.array(topic["terms"])
+    name_terms = []
+    #prio: bigrams
+    search_range = max_terms*2
+    if search_range >= len(all_terms):
+        search_range = len(all_terms) - 1
+    for term in all_terms[:search_range]:
+        if " " in term and len(name_terms) < max_terms: #bigram!
+            name_terms.append(term) # init with first term
+    if len(name_terms) < max_terms: #add unigrams
+        for term in all_terms[:search_range]:
+            if " " not in term and len(name_terms) < max_terms and not any(term in s for s in name_terms): #unigram
+                name_terms.append(term)
+
+    return ", ".join(name_terms)
 
 
 
