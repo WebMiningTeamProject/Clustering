@@ -73,8 +73,8 @@ def storeClustersToDB(cluster_assignments, topics, source_uris):
                       + ",'" + ",".join(topic["terms"]) + "','"
                       + getKPIString(topic) + "','"
                       + invalid + "','"
-                      + getClusterName(topic["terms"]) + "')")
-    sql = "INSERT INTO Cluster (cluster_id, terms, kpis, invalid) VALUES "
+                      + getClusterName(topic) + "')")
+    sql = "INSERT INTO Cluster (cluster_id, terms, kpis, invalid, cluster_name) VALUES "
     sql += ",".join(tuples)
     dbh.execute(sql)
 

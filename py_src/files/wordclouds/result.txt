@@ -1,0 +1,65 @@
+Topic Overview:
+Topic  0  count:  12891
+KPIs: Avg. Weight = 0.0140081945556, Article Ratio = 0.68887938866, Median Weight = 0.0112784327323, Std. Weight = 0.0111523705949,Top Ratio = 0.239702117757
+Topic  1  count:  746
+KPIs: Avg. Weight = 0.034510509744, Article Ratio = 0.0398653342596, Median Weight = 0.00589924431412, Std. Weight = 0.066733858498,Top Ratio = 0.199731903485
+Topic  2  count:  16239
+KPIs: Avg. Weight = 0.0154862497548, Article Ratio = 0.867792443756, Median Weight = 0.0133676023358, Std. Weight = 0.0112017168775,Top Ratio = 0.275078514687
+Topic  3  count:  376
+KPIs: Avg. Weight = 0.0958992826834, Article Ratio = 0.0200929834874, Median Weight = 0.00508422042154, Std. Weight = 0.135585753672,Top Ratio = 0.340425531915
+Topic  4  count:  2604
+KPIs: Avg. Weight = 0.0224145764691, Article Ratio = 0.139154598408, Median Weight = 0.00243079675571, Std. Weight = 0.0320940054186,Top Ratio = 0.250384024578
+Topic  5  count:  7414
+KPIs: Avg. Weight = 0.0138960416649, Article Ratio = 0.396195158446, Median Weight = 0.00693080538165, Std. Weight = 0.0159436351522,Top Ratio = 0.231319125978
+Topic  6  count:  411
+KPIs: Avg. Weight = 0.0698261626226, Article Ratio = 0.0219633409929, Median Weight = 0.00684653613218, Std. Weight = 0.126265894057,Top Ratio = 0.192214111922
+Topic  7  count:  248
+KPIs: Avg. Weight = 0.0693201935913, Article Ratio = 0.013252818896, Median Weight = 0.0024322112034, Std. Weight = 0.11916830986,Top Ratio = 0.254032258065
+Topic  8  count:  3198
+KPIs: Avg. Weight = 0.0231462272626, Article Ratio = 0.170897237215, Median Weight = 0.0109932014343, Std. Weight = 0.0297846849673,Top Ratio = 0.245778611632
+Topic  9  count:  1732
+KPIs: Avg. Weight = 0.0270919477083, Article Ratio = 0.0925559771282, Median Weight = 0.00539739701091, Std. Weight = 0.0456166064952,Top Ratio = 0.224018475751
+Topic  10  count:  2445
+KPIs: Avg. Weight = 0.0198194103418, Article Ratio = 0.130657831454, Median Weight = 0.00689232774836, Std. Weight = 0.0344598037757,Top Ratio = 0.191411042945
+Topic  11  count:  1438
+KPIs: Avg. Weight = 0.0341617270148, Article Ratio = 0.0768449740822, Median Weight = 0.0287059956153, Std. Weight = 0.0298688268328,Top Ratio = 0.468706536857
+Topic  12  count:  176
+KPIs: Avg. Weight = 0.0893742077383, Article Ratio = 0.00940522631326, Median Weight = 0.00248175266494, Std. Weight = 0.160166901528,Top Ratio = 0.227272727273
+Topic  13  count:  1820
+KPIs: Avg. Weight = 0.0322798491777, Article Ratio = 0.0972585902848, Median Weight = 0.0094444440696, Std. Weight = 0.0425345115719,Top Ratio = 0.314285714286
+Topic  14  count:  997
+KPIs: Avg. Weight = 0.0201937859806, Article Ratio = 0.0532784695132, Median Weight = 0.00456085834854, Std. Weight = 0.0694598593472,Top Ratio = 0.0922768304915
+Topic  15  count:  1929
+KPIs: Avg. Weight = 0.0237883763471, Article Ratio = 0.103083417945, Median Weight = 0.00867697149439, Std. Weight = 0.0369707849515,Top Ratio = 0.19854847071
+Topic  16  count:  6535
+KPIs: Avg. Weight = 0.0150689077835, Article Ratio = 0.349222465666, Median Weight = 0.011308632931, Std. Weight = 0.0134307461035,Top Ratio = 0.214690130069
+Topic  17  count:  210
+KPIs: Avg. Weight = 0.109232530663, Article Ratio = 0.0112221450329, Median Weight = 0.0111055568503, Std. Weight = 0.14405489279,Top Ratio = 0.419047619048
+Topic  18  count:  1192
+KPIs: Avg. Weight = 0.0292906179632, Article Ratio = 0.063699032758, Median Weight = 0.00743504772026, Std. Weight = 0.0528029612533,Top Ratio = 0.224832214765
+Topic  19  count:  87
+KPIs: Avg. Weight = 0.159344615442, Article Ratio = 0.00464917437076, Median Weight = 0.00606376378116, Std. Weight = 0.231159775601,Top Ratio = 0.310344827586
+Topic  20  count:  278
+KPIs: Avg. Weight = 0.0734943809252, Article Ratio = 0.0148559824721, Median Weight = 0.030664666079, Std. Weight = 0.0813840829222,Top Ratio = 0.406474820144
+Topic  21  count:  860
+KPIs: Avg. Weight = 0.0396866148756, Article Ratio = 0.0459573558489, Median Weight = 0.00884806748634, Std. Weight = 0.0590769968465,Top Ratio = 0.305813953488
+Topic  22  count:  2076
+KPIs: Avg. Weight = 0.0262981389908, Article Ratio = 0.110938919468, Median Weight = 0.0069140936372, Std. Weight = 0.0401163279934,Top Ratio = 0.241811175337
+Topic  23  count:  3451
+KPIs: Avg. Weight = 0.0187993409112, Article Ratio = 0.18441725004, Median Weight = 0.0104165167645, Std. Weight = 0.0230912494158,Top Ratio = 0.27064618951
+Topic  24  count:  261
+KPIs: Avg. Weight = 0.0972760716264, Article Ratio = 0.0139475231123, Median Weight = 0.00750843289938, Std. Weight = 0.141825556322,Top Ratio = 0.306513409962
+Topic  25  count:  86
+KPIs: Avg. Weight = 0.18798271573, Article Ratio = 0.00459573558489, Median Weight = 0.0142899581101, Std. Weight = 0.227006177825,Top Ratio = 0.581395348837
+Topic  26  count:  1378
+KPIs: Avg. Weight = 0.0366049480184, Article Ratio = 0.0736386469299, Median Weight = 0.0112605666669, Std. Weight = 0.0481352266623,Top Ratio = 0.301161103048
+Topic  27  count:  172
+KPIs: Avg. Weight = 0.0620236545184, Article Ratio = 0.00919147116978, Median Weight = 0.00517033980518, Std. Weight = 0.139201676444,Top Ratio = 0.139534883721
+Topic  28  count:  2105
+KPIs: Avg. Weight = 0.02898557498, Article Ratio = 0.112488644258, Median Weight = 0.00927379362233, Std. Weight = 0.0392793016619,Top Ratio = 0.308788598575
+Topic  29  count:  553
+KPIs: Avg. Weight = 0.0433286270886, Article Ratio = 0.0295516485865, Median Weight = 0.00774712317458, Std. Weight = 0.0748606148661,Top Ratio = 0.271247739602
+Create WordClouds per topic in  files/wordclouds/nmf/
+DB: Stored 30 cluster
+Removed invalid clusters, 37573 assignments remaining
+DB: Stored 37450 assignments
