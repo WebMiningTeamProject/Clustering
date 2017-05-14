@@ -5,26 +5,36 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import os, shutil
 from dbhandler import DatabaseHandler
+from sklearn.metrics.cluster import silhouette_samples
 
 
-def print_clusters(cluster_assignments, topics):
+def print_clusters(cluster_assignments, topics, soft_clustering=True):
     print("Topic Overview:")
-    clusters_unique, cluster_counts = getUniquesAndCounts(cluster_assignments, topics)
+    clusters_unique, cluster_counts = getUniquesAndCounts(cluster_assignments, topics, soft_clustering)
     for c_idx, cluster in enumerate(clusters_unique):
         print("Topic ", c_idx,
-              " count: ", cluster_counts[c_idx])
+              " Count: ", cluster_counts[c_idx],
+              " Keep: ", topics[c_idx]["keep"],
+              " Name: ", getClusterName(topics[c_idx]))
         #print("top terms: ", topics[c_idx]["terms"])
-        if "avg_weight" in topics[c_idx] and "article_ratio" in topics[c_idx]:
-            print(getKPIString(topics[c_idx]))
+        print(getKPIString(topics[c_idx]))
+
+    #print("Mean Silhouette Score: " + str(calcMeanSilhouetteScore(topics)))
 
 
-def create_wordclouds(cluster_assignments, topics, files_path="files/wordclouds/", prefix="", clear_path=False):
+
+def create_wordclouds(cluster_assignments,
+                      topics,
+                      files_path="files/wordclouds/",
+                      prefix="",
+                      clear_path=False,
+                      soft_clustering=True):
     print("Create WordClouds per topic in ", files_path)
     if clear_path:
         shutil.rmtree(files_path,ignore_errors=True)
     if not os.path.exists(files_path):
         os.makedirs(files_path)
-    clusters_unique, cluster_counts = getUniquesAndCounts(cluster_assignments, topics)
+    clusters_unique, cluster_counts = getUniquesAndCounts(cluster_assignments, topics, soft_clustering)
     for cluster in clusters_unique:
         topic = topics[cluster]
         #input format for wordcloud
@@ -44,7 +54,7 @@ def create_wordclouds(cluster_assignments, topics, files_path="files/wordclouds/
                arr=wordcloud)
 
 
-def storeClustersToDB(cluster_assignments, topics, source_uris):
+def storeClustersToDB(cluster_assignments, topics, source_uris, soft_clustering=True):
     dbh = DatabaseHandler()
 
     # 1) store topics  (table: topic_id(=idx), topTerms (comma seperated)
@@ -99,7 +109,7 @@ def storeClustersToDB(cluster_assignments, topics, source_uris):
     # 2.2 store top 5 assignments
     tuples = []
     setRemovedClustersToNegative(cluster_assignments, topics)
-    if len(cluster_assignments.shape) > 1:  # soft clustering
+    if soft_clustering:  # soft clustering
         assignment_sorter = np.argsort(cluster_assignments, axis=1)[:,-5:]  # top 5 topics (ascending sorted)
         for i, weights in enumerate(cluster_assignments):
             for j, cluster_idx in enumerate(assignment_sorter[i,:][::-1]): #get descending sort for article
@@ -123,30 +133,35 @@ def storeClustersToDB(cluster_assignments, topics, source_uris):
 
 
 # --- Helper Methods
-def getUniquesAndCounts(cluster_assignments, topics):
+def getUniquesAndCounts(cluster_assignments, topics,soft_clustering=True):
     clusters_unique = topics.keys()
-    if len(cluster_assignments.shape) > 1:  # soft clustering
+    if soft_clustering:  # soft clustering
         cluster_counts = np.count_nonzero(cluster_assignments, axis=0)
     else:  # hard clustering
         cluster_counts = np.unique(cluster_assignments, return_counts=True)[1]
     return clusters_unique, cluster_counts
 
 
-def filterTopics(topics): #inplace
+def filterTopics(topics, soft_clustering=True): #inplace, only applicable for soft clustering(?)
     count = 0
     for topic_idx, topic in topics.items():
         keep = False
-        if 0.04 < topic["article_ratio"] < 0.5 and (topic["median_weight"] > 0.005 or topic["top_ratio"] > 0.3):
-            keep = True
-            count += 1
+        if soft_clustering: #soft clustering KPIs available
+            if 0.04 < topic["article_ratio"] < 0.5 and (topic["median_weight"] > 0.005 or topic["top_ratio"] > 0.3):
+                keep = True
+                count += 1
+        else:
+            #if 0.04 < topic["article_ratio"] < 0.5:
+            if topic["count"] > 100 and topic["article_ratio"] < 0.5 and 0 < topic["silhouette_score"] < 0.66:
+                keep = True
+                count += 1
         topics[topic_idx]["keep"] = keep
-        # if(not keep):
-        #     cluster_assignments[:,topic_idx] = 0
+
     print("Filtered Clusters, %s remaining" % count)
 
 
-def setRemovedClustersToNegative(cluster_assignments, topics): #inplace
-    if len(cluster_assignments.shape) > 1:  # soft clustering
+def setRemovedClustersToNegative(cluster_assignments, topics, soft_clustering=True): #inplace
+    if soft_clustering:  # soft clustering
         for topic_idx, topic in topics.items():
             if not topics[topic_idx]["keep"]:
                 cluster_assignments[:,topic_idx] = -1
@@ -158,17 +173,21 @@ def setRemovedClustersToNegative(cluster_assignments, topics): #inplace
     print("Removed invalid clusters, %s assignments remaining" % len(cluster_assignments[cluster_assignments > 0]))
 
 def getKPIString(topic):
-    # string = "KPIs: Avg. Weight = " + str(topic["avg_weight"]) +\
-    #          ", Article Ratio = " + str(topic["article_ratio"]) +\
-    #          ", Median Weight = " + str(topic["median_weight"]) +\
-    #          ", Std. Weight = " + str(topic["std_weight"]) +\
-    #          ", Top Ratio = " + str(topic["top_ratio"])
-    string = "KPIs: Avg. Weight = %s, Article Ratio = %s, Median Weight = %s, Std. Weight = %s,Top Ratio = %s""" \
-             % (topic["avg_weight"],
-                topic["article_ratio"],
-                topic["median_weight"],
-                topic["std_weight"],
-                topic["top_ratio"])
+    if "median_weight" in topic: #softclustering KPIs avaliable
+        string = """KPIs: Avg. Weight = %s, Article Ratio = %s, Median Weight = %s, 
+                    Std. Weight = %s, Top Ratio = %s, Silhouette Score = %s """ \
+                 % (topic["avg_weight"],
+                    topic["article_ratio"],
+                    topic["median_weight"],
+                    topic["std_weight"],
+                    topic["top_ratio"],
+                    topic["silhouette_score"]
+                    )
+    else:
+        string = """KPIs: Article Ratio = %s, Silhouette Score = %s """ \
+                 % (topic["article_ratio"],
+                    topic["silhouette_score"]
+                    )
 
     return string
 
@@ -189,6 +208,62 @@ def getClusterName(topic, max_terms=3):
                 name_terms.append(term)
 
     return ", ".join(name_terms)
+
+def calcMeanSilhouetteScore(topics):
+    kpi_sum = 0
+    for topic in topics.values():
+        if not np.isnan(topic["silhouette_score"]):
+            kpi_sum += topic["silhouette_score"]
+
+    return kpi_sum / len(topics.keys())
+
+
+# def calc_metrics(topics, cluster_assignments, raw_data, soft_clustering=True):
+#     print("Calculate KPIs...")
+#     total_count = cluster_assignments.shape[0]
+#
+#     if soft_clustering:
+#         sums = np.sum(cluster_assignments, axis=0)
+#         counts = np.count_nonzero(cluster_assignments, axis=0)
+#         hard_cluster = np.argsort(cluster_assignments, axis=1)[:, -1]  # just the last column (Ascending sorted!)
+#         # inter-cluster-sim - intra-cluster-sim / max of both
+#         silhouette_scores = silhouette_samples(raw_data, hard_cluster)
+#     else:
+#         # inter-cluster-sim - intra-cluster-sim / max of both
+#         silhouette_scores = silhouette_samples(raw_data, cluster_assignments)
+#
+#
+#
+#     for c_idx, topic in topics.items():
+#         # Calc. KPIs
+#
+#         if soft_clustering:
+#             avg_weight = sums[c_idx]/counts[c_idx]
+#             article_ratio = counts[c_idx]/total_count
+#             mask_nonzero = cluster_assignments[:,c_idx] > 0
+#             std = np.std(cluster_assignments[mask_nonzero,c_idx])
+#             median = np.median(cluster_assignments[mask_nonzero,c_idx])
+#             top_ratio = len(np.where(hard_cluster == c_idx)[0]) / counts[c_idx]
+#             silhouette_score = np.mean(silhouette_scores[hard_cluster == c_idx])
+#
+#             #Store KPIs
+#             topic.update({"avg_weight": avg_weight,
+#                           "median_weight": median,
+#                           "std_weight": std,
+#                           "article_ratio": article_ratio,
+#                           "top_ratio": top_ratio,
+#                           "silhouette_score": silhouette_score})
+#         else:
+#             article_ratio = len(cluster_assignments[cluster_assignments == c_idx]) / total_count
+#             silhouette_score = np.mean(silhouette_scores[cluster_assignments == c_idx])
+#             # Store KPIs
+#             topic.update({"article_ratio": article_ratio,
+#                           "silhouette_score": silhouette_score})
+#
+#     return #topics  #inplace update!
+#
+
+
 
 
 
