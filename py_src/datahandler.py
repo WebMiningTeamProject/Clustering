@@ -8,12 +8,11 @@ class DataHandler:
         #Init Data
         self.valid = self.__load_data(use_cache=use_cache, files_path=files_path, ngram_range=ngram_range)
 
-        # #Vectorize
-        # self.tfidf, self.tfidf_vocab = self.__calc_tfidf(self.texts, ngram_range=ngram_range)
-        # self.tf, self.tf_vocab = self.__calc_tf(self.texts, ngram_range=ngram_range)
-
     def get_uris(self):
         return self.uris
+
+    def get_providers(self):
+        return self.providers
 
     def get_texts(self):
         return self.texts
@@ -28,6 +27,7 @@ class DataHandler:
         valid = False
         if (use_cache):
             try:
+                self.providers = np.load(files_path + "providers.npy")
                 self.uris = np.load(files_path + "uris.npy")
                 self.texts = np.load(files_path + "texts.npy")
                 self.tfidf = load_npz(files_path + "tfidf.npz")
@@ -45,17 +45,21 @@ class DataHandler:
             print("Data: Querying ...")
             handler = DatabaseHandler()
             result = handler.execute(
-                """SELECT source_uri as 'uri', bow as 'text' 
-                FROM NewsArticlesBOW    
+                """SELECT b.source_uri as 'uri', b.bow as 'text', p.root_name as 'provider'
+                FROM NewsArticlesBOW as b 
+                INNER JOIN NewsArticles as a ON b.source_uri = a.source_uri
+	            INNER JOIN NewsProviderComplete as p ON a.news_provider = p.name
                 """)
 
             n = len(result)
             self.uris = np.empty(n, dtype=np.dtype(('U', 255)))
             self.texts = np.empty(n, dtype=np.dtype(('U', 10000)))
+            self.providers = np.empty(n, dtype=np.dtype(('U', 255)))
 
             for i, row in enumerate(result):
                 self.uris[i] = row["uri"]
                 self.texts[i] = row["text"]
+                self.providers[i] = row["provider"]
             print("Data: Retrieved ", len(self.texts), " texts")
 
             # Vectorize
@@ -65,6 +69,7 @@ class DataHandler:
             valid = True
 
             try:
+                np.save(files_path + "providers.npy", self.providers)
                 np.save(files_path + "uris.npy", self.uris)
                 np.save(files_path + "texts.npy", self.texts)
                 np.save(files_path + "tfidf_vocab.npy", self.tfidf_vocab)

@@ -22,17 +22,12 @@ class ClusterHandler:
         self.prefix = prefix
         self.path = path
 
-        #self.ngram_range = ngram_range
-
-        #self.datahandler = DataHandler(use_cache=use_cache,ngram_range=ngram_range)
-        #self.tfidf, self.tfidf_vocab = self.datahandler.get_tfidf()
-        #self.tf, self.tf_vocab = self.datahandler.get_tf()
-
     ## DECOMPOSITIONS
 
     def calc_svd(self,
                  matrix,
                  vocab,
+                 providers,
                  svd_k=None):
         if svd_k == None:
             svd_k = self.n_topics + self.soft_offset
@@ -68,7 +63,8 @@ class ClusterHandler:
                              raw_data=matrix,
                              path=self.path + "svd/",
                              prefix=self.prefix,
-                             soft_clustering=True)
+                             soft_clustering=True,
+                             providers=providers)
 
 
         # Use k-means to cluster texts hard (based on U: text-topic assignment)
@@ -88,7 +84,8 @@ class ClusterHandler:
                              raw_data=matrix,
                              path=self.path + "svd/kmeans/",
                              prefix=self.prefix,
-                             soft_clustering=False)
+                             soft_clustering=False,
+                             providers=providers)
 
         return cluster_assignments, topics
 
@@ -96,7 +93,9 @@ class ClusterHandler:
     def calc_nmf(self,
                  matrix,
                  vocab,
-                 components=None):
+                 providers,
+                 components=None,
+                 hardclustering=True):
         if components is None:
             components = self.n_topics + self.soft_offset
 
@@ -127,22 +126,24 @@ class ClusterHandler:
                              raw_data=matrix,
                              path=self.path + "nmf/",
                              prefix=self.prefix,
-                             soft_clustering=True)
+                             soft_clustering=True,
+                             providers=providers)
 
         #cluster_assignments = self.__removeInvalid__(cluster_assignments=cluster_assignments, topics=topics)
+        if hardclustering:
+            print("NMF: KMeans: Calculating ", self.n_topics, " clusters (topics)...")
+            cluster_assignments, topics = self.__applyKMeans__(raw_data=matrix,
+                                                               vocab=vocab,
+                                                               soft_clustering=cluster_assignments)
+            print("NMF: KMeans: ", len(cluster_assignments), " cluster assignments")
 
-        print("NMF: KMeans: Calculating ", self.n_topics, " clusters (topics)...")
-        cluster_assignments, topics = self.__applyKMeans__(raw_data=matrix,
-                                                           vocab=vocab,
-                                                           soft_clustering=cluster_assignments)
-        print("NMF: KMeans: ", len(cluster_assignments), " cluster assignments")
-
-        self.__postprocess__(clusters=cluster_assignments,
-                             topics=topics,
-                             raw_data=matrix,
-                             path=self.path + "nmf/kmeans/",
-                             prefix=self.prefix,
-                             soft_clustering=False)
+            self.__postprocess__(clusters=cluster_assignments,
+                                 topics=topics,
+                                 raw_data=matrix,
+                                 path=self.path + "nmf/kmeans/",
+                                 prefix=self.prefix,
+                                 soft_clustering=False,
+                                 providers=providers)
 
 
         return cluster_assignments, topics
@@ -150,8 +151,10 @@ class ClusterHandler:
     def calc_lda(self,
                  matrix,
                  vocab,
+                 providers,
                  max_iter=10,
-                 n_topics=None):
+                 n_topics=None
+                 ):
 
         if n_topics is None:
             n_topics = self.n_topics + self.soft_offset
@@ -175,11 +178,12 @@ class ClusterHandler:
                              "weights": component[top]}
 
         self.__postprocess__(clusters=cluster_assignments,
-                            topics=topics,
-                            raw_data=matrix,
-                            path=self.path + "lda/",
-                            prefix=self.prefix,
-                            soft_clustering=True)
+                             topics=topics,
+                             raw_data=matrix,
+                             path=self.path + "lda/",
+                             prefix=self.prefix,
+                             soft_clustering=True,
+                             providers=providers)
 
         print("LDA: KMeans: Calculating ", self.n_topics, " clusters (topics)...")
         cluster_assignments, topics = self.__applyKMeans__(raw_data=matrix,
@@ -192,7 +196,8 @@ class ClusterHandler:
                              raw_data=matrix,
                              path=self.path + "lda/kmeans/",
                              prefix=self.prefix,
-                             soft_clustering=False)
+                             soft_clustering=False,
+                             providers=providers)
 
         return cluster_assignments, topics
 
@@ -215,27 +220,20 @@ class ClusterHandler:
         return cluster_assignments, topics
 
 
-    def __postprocess__(self, clusters, topics, raw_data, path, prefix, soft_clustering=True, storeToDB=False, uris=None):
+    #def __postprocess__(self, clusters, topics, raw_data, path, prefix, soft_clustering=True, storeToDB=False, uris=None, ):
+    def __postprocess__(self, clusters, topics, raw_data, path, prefix, providers, soft_clustering=True):
         self.__calc_metrics__(topics=topics,
                               cluster_assignments=clusters,
                               raw_data=raw_data,
+                              providers=providers,
                               soft_clustering=soft_clustering)
 
-        out.filterTopics(topics=topics,
-                         soft_clustering=soft_clustering)
+        out.filterTopics(topics=topics)
 
         out.print_clusters(cluster_assignments=clusters,
                            topics=topics,
                            soft_clustering=soft_clustering)
         print("Mean Silhouette Score: " + str(out.calcMeanSilhouetteScore(topics)))
-        # if hardclustering:
-        #     print("KMeans: Calculating ", n_topics, " clusters (topics)...")
-        #     cluster_assignments, topics = self.__applyKMeans__(n_topics=n_topics,
-        #                                               raw_data=matrix,
-        #                                               vocab=vocab,
-        #                                               top_n=top_n,
-        #                                               soft_clustering=U)
-        #     print("KMeans: ", len(cluster_assignments), " cluster assignments")
 
         out.create_wordclouds(cluster_assignments=clusters,
                               topics=topics,
@@ -243,17 +241,18 @@ class ClusterHandler:
                               prefix=prefix,
                               clear_path=True,
                               soft_clustering=soft_clustering)
-        if storeToDB:
-            out.storeClustersToDB(cluster_assignments=clusters,
-                                  topics=topics,
-                                  source_uris=uris,
-                                  soft_clustering=soft_clustering)
+        # if storeToDB:
+        #    out.storeClustersToDB(cluster_assignments=clusters,
+        #                          topics=topics,
+        #                          source_uris=uris,
+        #                          soft_clustering=soft_clustering)
         return
 
 
-    def __calc_metrics__(self, topics, cluster_assignments, raw_data, soft_clustering=True):
+    def __calc_metrics__(self, topics, cluster_assignments, raw_data, providers, soft_clustering=True):
         print("Calculate KPIs...")
         total_count = cluster_assignments.shape[0]
+        provider_count = len(np.unique(providers))
 
         if soft_clustering:
             sums = np.sum(cluster_assignments, axis=0)
@@ -268,6 +267,7 @@ class ClusterHandler:
         for c_idx, topic in topics.items():
             # Calc. KPIs
 
+
             if soft_clustering:
                 count = counts[c_idx]
                 avg_weight = sums[c_idx] / counts[c_idx]
@@ -277,6 +277,7 @@ class ClusterHandler:
                 median = np.median(cluster_assignments[mask_nonzero, c_idx])
                 top_ratio = len(np.where(hard_cluster == c_idx)[0]) / counts[c_idx]
                 silhouette_score = np.mean(silhouette_scores[hard_cluster == c_idx])
+                provider_ratio = len(np.unique(providers[hard_cluster == c_idx])) / provider_count
 
                 # Store KPIs
                 topic.update({"count": count,
@@ -285,15 +286,18 @@ class ClusterHandler:
                               "std_weight": std,
                               "article_ratio": article_ratio,
                               "top_ratio": top_ratio,
-                              "silhouette_score": silhouette_score})
+                              "silhouette_score": silhouette_score,
+                              "provider_ratio": provider_ratio})
             else:
                 count = len(cluster_assignments[cluster_assignments == c_idx])
                 article_ratio = count / total_count
                 silhouette_score = np.mean(silhouette_scores[cluster_assignments == c_idx])
+                provider_ratio = len(np.unique(providers[cluster_assignments == c_idx])) / provider_count
                 # Store KPIs
                 topic.update({"count": count,
                               "article_ratio": article_ratio,
-                              "silhouette_score": silhouette_score})
+                              "silhouette_score": silhouette_score,
+                              "provider_ratio": provider_ratio})
 
         return  # topics  #inplace update!
 

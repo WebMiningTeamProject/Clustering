@@ -47,7 +47,7 @@ def create_wordclouds(cluster_assignments,
         # keep = "N"
         # if 0.04 < topic["article_ratio"] < 0.5 and (topic["median_weight"] > 0.005 or topic["top_ratio"] > 0.3):
         #     keep = "Y"
-        add_info = "_" + str(cluster_counts[cluster]) + "_" + str(topic["keep"])
+        add_info = "_" + str(cluster_counts[cluster]) + "_" + str(topic["provider_ratio"]) + "_" + str(topic["keep"])
 
         # save it
         plt.imsave(fname=files_path + prefix + "topic" + str(cluster) + add_info + ".png",
@@ -142,19 +142,13 @@ def getUniquesAndCounts(cluster_assignments, topics,soft_clustering=True):
     return clusters_unique, cluster_counts
 
 
-def filterTopics(topics, soft_clustering=True): #inplace, only applicable for soft clustering(?)
+def filterTopics(topics): #inplace
     count = 0
     for topic_idx, topic in topics.items():
         keep = False
-        if soft_clustering: #soft clustering KPIs available
-            if 0.04 < topic["article_ratio"] < 0.5 and (topic["median_weight"] > 0.005 or topic["top_ratio"] > 0.3):
-                keep = True
-                count += 1
-        else:
-            #if 0.04 < topic["article_ratio"] < 0.5:
-            if topic["count"] > 100 and topic["article_ratio"] < 0.5 and 0 < topic["silhouette_score"] < 0.66:
-                keep = True
-                count += 1
+        if 0.01 < topic["article_ratio"] < 0.5 and topic["provider_ratio"] > 0.75:
+            keep = True
+            count += 1
         topics[topic_idx]["keep"] = keep
 
     print("Filtered Clusters, %s remaining" % count)
@@ -175,37 +169,42 @@ def setRemovedClustersToNegative(cluster_assignments, topics, soft_clustering=Tr
 def getKPIString(topic):
     if "median_weight" in topic: #softclustering KPIs avaliable
         string = """KPIs: Avg. Weight = %s, Article Ratio = %s, Median Weight = %s, 
-                    Std. Weight = %s, Top Ratio = %s, Silhouette Score = %s """ \
+                    Std. Weight = %s, Top Ratio = %s, Silhouette Score = %s, Provider Ratio = %s """ \
                  % (topic["avg_weight"],
                     topic["article_ratio"],
                     topic["median_weight"],
                     topic["std_weight"],
                     topic["top_ratio"],
-                    topic["silhouette_score"]
+                    topic["silhouette_score"],
+                    topic["provider_ratio"]
                     )
     else:
-        string = """KPIs: Article Ratio = %s, Silhouette Score = %s """ \
+        string = """KPIs: Article Ratio = %s, Silhouette Score = %s, Provider Ratio = %s """ \
                  % (topic["article_ratio"],
-                    topic["silhouette_score"]
+                    topic["silhouette_score"],
+                    topic["provider_ratio"]
                     )
 
     return string
 
 
-def getClusterName(topic, max_terms=3):
+def getClusterName(topic, max_terms=3, search_range=5):
     all_terms = np.array(topic["terms"])
     name_terms = []
     #prio: bigrams
-    search_range = max_terms*2
+    #search_range = max_terms*2
     if search_range >= len(all_terms):
         search_range = len(all_terms) - 1
     for term in all_terms[:search_range]:
         if " " in term and len(name_terms) < max_terms: #bigram!
             name_terms.append(term) # init with first term
     if len(name_terms) < max_terms: #add unigrams
-        for term in all_terms[:search_range]:
-            if " " not in term and len(name_terms) < max_terms and not any(term in s for s in name_terms): #unigram
+        for term in all_terms: #exhaustive to ensure filling up till max_terms
+            if " " not in term and not any(term in s for s in name_terms): #unigram
+                #and len(name_terms) < max_terms
                 name_terms.append(term)
+                if len(name_terms) >= max_terms:
+                    break
 
     return ", ".join(name_terms)
 
@@ -217,51 +216,6 @@ def calcMeanSilhouetteScore(topics):
 
     return kpi_sum / len(topics.keys())
 
-
-# def calc_metrics(topics, cluster_assignments, raw_data, soft_clustering=True):
-#     print("Calculate KPIs...")
-#     total_count = cluster_assignments.shape[0]
-#
-#     if soft_clustering:
-#         sums = np.sum(cluster_assignments, axis=0)
-#         counts = np.count_nonzero(cluster_assignments, axis=0)
-#         hard_cluster = np.argsort(cluster_assignments, axis=1)[:, -1]  # just the last column (Ascending sorted!)
-#         # inter-cluster-sim - intra-cluster-sim / max of both
-#         silhouette_scores = silhouette_samples(raw_data, hard_cluster)
-#     else:
-#         # inter-cluster-sim - intra-cluster-sim / max of both
-#         silhouette_scores = silhouette_samples(raw_data, cluster_assignments)
-#
-#
-#
-#     for c_idx, topic in topics.items():
-#         # Calc. KPIs
-#
-#         if soft_clustering:
-#             avg_weight = sums[c_idx]/counts[c_idx]
-#             article_ratio = counts[c_idx]/total_count
-#             mask_nonzero = cluster_assignments[:,c_idx] > 0
-#             std = np.std(cluster_assignments[mask_nonzero,c_idx])
-#             median = np.median(cluster_assignments[mask_nonzero,c_idx])
-#             top_ratio = len(np.where(hard_cluster == c_idx)[0]) / counts[c_idx]
-#             silhouette_score = np.mean(silhouette_scores[hard_cluster == c_idx])
-#
-#             #Store KPIs
-#             topic.update({"avg_weight": avg_weight,
-#                           "median_weight": median,
-#                           "std_weight": std,
-#                           "article_ratio": article_ratio,
-#                           "top_ratio": top_ratio,
-#                           "silhouette_score": silhouette_score})
-#         else:
-#             article_ratio = len(cluster_assignments[cluster_assignments == c_idx]) / total_count
-#             silhouette_score = np.mean(silhouette_scores[cluster_assignments == c_idx])
-#             # Store KPIs
-#             topic.update({"article_ratio": article_ratio,
-#                           "silhouette_score": silhouette_score})
-#
-#     return #topics  #inplace update!
-#
 
 
 
